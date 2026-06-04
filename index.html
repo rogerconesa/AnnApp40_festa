@@ -181,6 +181,13 @@
   <script src="sheets.js"></script>
   <script src="drive.js"></script>
   <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(r => {
+        console.log('SW registrat:', r.scope);
+      }).catch(e => console.warn('SW error:', e));
+    }
+  </script>
 
 </body>
 </html>
