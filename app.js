@@ -13,6 +13,23 @@
       document.getElementById('screen-login').classList.remove('active');
       document.getElementById('screen-login').classList.add('hidden');
       document.getElementById('screen-app').classList.remove('hidden');
+
+      // Mostrar avatar i nom
+      const profile = Auth.getProfile();
+      const avatar  = document.getElementById('user-avatar');
+      if (avatar && profile?.picture) {
+        avatar.src = profile.picture;
+        avatar.title = profile.name || profile.email || '';
+      }
+
+      // Botó sortir
+      document.getElementById('btn-logout')?.addEventListener('click', () => {
+        sessionStorage.removeItem('festa_token');
+        sessionStorage.removeItem('festa_profile');
+        sessionStorage.removeItem('festa_tab');
+        location.reload();
+      });
+
       _initApp();
     });
 
@@ -401,12 +418,27 @@
     document.getElementById('lb-prev').addEventListener('click', () => { if (_lbIdx > 0) { _lbIdx--; _renderLb(); } });
     document.getElementById('lb-next').addEventListener('click', () => { if (_lbIdx < _lbList.length - 1) { _lbIdx++; _renderLb(); } });
 
-    // Swipe
+    // Swipe millorat: ignora pinch, bloqueja navegació horitzontal del browser
     const lb = document.getElementById('lightbox');
-    lb.addEventListener('touchstart', e => { _lbStartX = e.touches[0].clientX; }, { passive: true });
+    let _lbStartX = 0, _lbStartY = 0, _lbIsPinch = false;
+
+    lb.addEventListener('touchstart', e => {
+      _lbIsPinch = e.touches.length > 1;
+      if (!_lbIsPinch) { _lbStartX = e.touches[0].clientX; _lbStartY = e.touches[0].clientY; }
+    }, { passive: true });
+
+    lb.addEventListener('touchmove', e => {
+      if (_lbIsPinch) return;
+      const dx = e.touches[0].clientX - _lbStartX;
+      const dy = e.touches[0].clientY - _lbStartY;
+      if (Math.abs(dx) > Math.abs(dy)) e.preventDefault(); // bloqueja iOS browser back/forward
+    }, { passive: false });
+
     lb.addEventListener('touchend', e => {
+      if (_lbIsPinch || e.changedTouches.length > 1) return;
       const dx = e.changedTouches[0].clientX - _lbStartX;
-      if (Math.abs(dx) > 40) {
+      const dy = e.changedTouches[0].clientY - _lbStartY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 2) {
         if (dx < 0 && _lbIdx < _lbList.length - 1) { _lbIdx++; _renderLb(); }
         else if (dx > 0 && _lbIdx > 0) { _lbIdx--; _renderLb(); }
       }

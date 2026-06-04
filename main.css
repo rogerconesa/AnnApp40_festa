@@ -296,3 +296,25 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
   font-weight: 700; padding: 0.65rem 1.4rem; transition: opacity 0.15s;
 }
 .edit-save-btn:hover { opacity: 0.88; }
+
+/* ── Header user + logout ────────────────────── */
+.app-header { justify-content: space-between; }
+.app-header-user { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.app-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 2px solid var(--accent); object-fit: cover;
+  display: none; /* s'activa quan té src */
+}
+.app-avatar[src]:not([src=""]) { display: block; }
+.app-logout-btn {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px; color: var(--text-muted); cursor: pointer;
+  font-family: var(--font); font-size: 0.85rem; font-weight: 500;
+  padding: 6px 12px; transition: color 0.15s;
+}
+.app-logout-btn:hover { color: var(--red); border-color: var(--red); }
+
+/* ── Zoom / pan fix ──────────────────────────── */
+body { overscroll-behavior-x: none; }
+#lightbox { touch-action: pan-y; }
+#lightbox #lb-img { touch-action: pinch-zoom; max-width: 100%; }
