@@ -29,15 +29,26 @@
 
   // ── Tabs ─────────────────────────────────────
   function _initTabs() {
+    // Restaurar tab de la sessió anterior
+    const savedTab = sessionStorage.getItem('festa_tab') || 'foto';
+    _setTab(savedTab);
+
     document.querySelectorAll('.nav-tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        _tab = btn.dataset.tab;
-        document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === _tab));
-        document.getElementById('panel-foto').classList.toggle('hidden', _tab !== 'foto');
-        document.getElementById('panel-veure').classList.toggle('hidden', _tab !== 'veure');
-        if (_tab === 'veure') _renderFotos();
-      });
+      btn.addEventListener('click', () => _setTab(btn.dataset.tab));
     });
+  }
+
+  function _setTab(tab) {
+    _tab = tab;
+    sessionStorage.setItem('festa_tab', tab);
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.getElementById('panel-foto').classList.toggle('hidden', tab !== 'foto');
+    document.getElementById('panel-veure').classList.toggle('hidden', tab !== 'veure');
+    if (tab === 'veure') {
+      // Mostrar loading i forçar càrrega
+      _showFotosLoading(true);
+      _loadFotos();
+    }
   }
 
   // ── Càmera / Captura ─────────────────────────
@@ -216,12 +227,19 @@
       .map(c => c.dataset.value).filter(Boolean);
   }
 
+  function _showFotosLoading(show) {
+    const grid = document.getElementById('fotos-grid');
+    if (show) grid.innerHTML = '<p class="fotos-empty">Carregant fotos... ⏳</p>';
+  }
+
   async function _loadFotos() {
     try {
       _fotos = await Sheets.readAll();
-      if (_tab === 'veure') _renderFotos();
+      _renderFotos(); // sempre renderitzar, independentment del tab actiu
     } catch(err) {
       console.error('Error carregant fotos:', err);
+      const grid = document.getElementById('fotos-grid');
+      if (grid) grid.innerHTML = '<p class="fotos-empty">Error carregant fotos. Prova de refrescar. 🔄</p>';
     }
     _scheduleRefresh();
   }
