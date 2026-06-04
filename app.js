@@ -232,17 +232,25 @@
 
   function _showFotosLoading(show) {
     const grid = document.getElementById('fotos-grid');
-    if (show) grid.innerHTML = '<p class="fotos-empty">Carregant fotos... ⏳</p>';
+    if (!grid) return;
+    if (show && _fotos.length === 0) {
+      grid.innerHTML = '<p class="fotos-empty">Carregant fotos... ⏳</p>';
+    } else if (show && _fotos.length > 0) {
+      // Mostrar les que ja tenim mentre refresquem
+      _renderFotos();
+    }
   }
 
   async function _loadFotos() {
     try {
-      _fotos = await Sheets.readAll();
-      _renderFotos(); // sempre renderitzar, independentment del tab actiu
+      const dades = await Sheets.readAll();
+      _fotos = dades;
+      _renderFotos();
     } catch(err) {
       console.error('Error carregant fotos:', err);
-      const grid = document.getElementById('fotos-grid');
-      if (grid) grid.innerHTML = '<p class="fotos-empty">Error carregant fotos. Prova de refrescar. 🔄</p>';
+      _showToast('❌ Error llegint fotos: ' + err.message, 'error');
+      // Renderitzar el que tenim (si hi ha alguna cosa)
+      _renderFotos();
     }
     _scheduleRefresh();
   }
