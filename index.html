@@ -114,6 +114,7 @@
         </div>
         <div class="lb-info">
           <div id="lb-hora" class="lb-hora"></div>
+          <div id="lb-autor" class="lb-autor"></div>
           <div id="lb-persones" class="lb-persones"></div>
           <div id="lb-notes" class="lb-notes"></div>
         </div>
@@ -124,6 +125,28 @@
         </div>
       </div>
       <button id="lb-close" class="lb-close">✕</button>
+      <button id="lb-edit" class="lb-edit hidden" title="Editar">✏️</button>
+    </div>
+
+    <!-- Modal edició -->
+    <div id="edit-modal" class="edit-modal-overlay hidden">
+      <div class="edit-modal">
+        <div class="edit-modal-handle"></div>
+        <div class="edit-modal-body">
+          <h3 class="edit-modal-title">✏️ Editar foto</h3>
+          <p class="edit-modal-label">Qui surt?</p>
+          <div class="chips-wrap" id="edit-chips-persones"></div>
+          <p class="edit-modal-label" style="margin-top:1rem">Comentari</p>
+          <textarea id="edit-notes" class="notes-input" rows="2" placeholder="Comentari..."></textarea>
+          <div class="edit-modal-actions">
+            <button id="edit-delete-btn" class="edit-delete-btn">🗑️ Eliminar foto</button>
+            <div style="display:flex;gap:8px">
+              <button id="edit-cancel-btn" class="edit-cancel-btn">Cancel·lar</button>
+              <button id="edit-save-btn" class="edit-save-btn">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Bottom nav -->

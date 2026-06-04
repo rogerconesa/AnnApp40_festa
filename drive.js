@@ -48,3 +48,18 @@ const Drive = (() => {
 
   return { uploadFile };
 })();
+
+// Afegir deleteFile al mòdul Drive
+const _driveDeleteFile = async (fileId, _isRetry) => {
+  const token = Drive._token ? Drive._token() : sessionStorage.getItem('festa_token');
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  if (res.status === 401 && !_isRetry) {
+    await Auth.refreshToken();
+    return _driveDeleteFile(fileId, true);
+  }
+  // 204 = OK sense cos
+};
+Drive.deleteFile = _driveDeleteFile;

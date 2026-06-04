@@ -113,28 +113,31 @@
     progressBar.classList.remove('hidden');
 
     try {
-      const persones = _getSelectedPersones();
-      const notes    = document.getElementById('tag-notes').value.trim();
-      const now = new Date();
-      // Guardem en hora local (GMT+2 a Barcelona) com a ISO amb offset
-      const tzOffset = -now.getTimezoneOffset(); // minuts, positiu per GMT+2
-      const sign = tzOffset >= 0 ? '+' : '-';
-      const pad  = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
-      const timestamp = now.getFullYear() + '-' +
+      const persones   = _getSelectedPersones();
+      const notes      = document.getElementById('tag-notes').value.trim();
+      const now        = new Date();
+      const tzOffset   = -now.getTimezoneOffset();
+      const sign       = tzOffset >= 0 ? '+' : '-';
+      const pad        = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
+      const timestamp  = now.getFullYear() + '-' +
         pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + 'T' +
         pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) +
         sign + pad(tzOffset / 60) + ':' + pad(tzOffset % 60);
-      const tipus    = _capturedFile.type.startsWith('video/') ? 'video' : 'foto';
+      const tipus      = _capturedFile.type.startsWith('video/') ? 'video' : 'foto';
+      const profile    = Auth.getProfile();
+      const pujatNom   = profile?.name  || profile?.email?.split('@')[0] || 'Anònim';
+      const pujatEmail = profile?.email || '';
 
       const result = await Drive.uploadFile(_capturedFile, (pct) => {
         progressBar.querySelector('.progress-fill').style.width = pct + '%';
       });
 
       const fileId = result.id;
-      const url    = `https://drive.google.com/uc?id=${fileId}`;
+      // thumbnail URL — funciona per embedding (uc?id= no funciona ja)
+      const url    = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
       const id     = `festa_${Date.now()}`;
 
-      await Sheets.appendRow({ id, fileId, url, timestamp, persones, notes, tipus });
+      await Sheets.appendRow({ id, fileId, url, timestamp, persones, notes, pujatNom, pujatEmail, tipus });
 
       // Reset
       document.getElementById('photo-preview').innerHTML = '';
@@ -285,19 +288,18 @@
       const card = document.createElement('div');
       card.className = 'foto-card';
       const hora = foto.timestamp ? new Date(foto.timestamp).toLocaleTimeString('ca', { hour: '2-digit', minute: '2-digit' }) : '';
-      const thumbUrl = foto.tipus === 'video'
-        ? `https://drive.google.com/thumbnail?id=${foto.fileId}&sz=w400`
-        : `https://drive.google.com/thumbnail?id=${foto.fileId}&sz=w400`;
+      const thumbUrl = `https://drive.google.com/thumbnail?id=${foto.fileId}&sz=w400`;
 
       card.innerHTML = `
         <div class="foto-card-img">
-          <img src="${thumbUrl}" loading="lazy" onerror="this.style.display='none'" />
+          <img src="${thumbUrl}" loading="lazy" onerror="this.style.background='var(--bg3)'" />
           ${foto.tipus === 'video' ? '<div class="foto-card-vid-badge">▶</div>' : ''}
         </div>
         <div class="foto-card-info">
           ${hora ? `<span class="foto-card-hora">${hora}</span>` : ''}
+          ${foto.pujatNom ? `<span class="foto-card-autor">${foto.pujatNom}</span>` : ''}
           ${foto.persones.length ? `<span class="foto-card-persones">${foto.persones.slice(0,3).join(', ')}</span>` : ''}
-          ${foto.notes ? `<span class="foto-card-notes">${foto.notes}</span>` : ''}
+          ${foto.notes ? `<span class="foto-card-notes">"${foto.notes}"</span>` : ''}
         </div>
       `;
       card.addEventListener('click', () => _openLightbox(foto, filtered));
@@ -319,17 +321,67 @@
     const foto = _lbList[_lbIdx];
     if (!foto) return;
     const hora = foto.timestamp ? new Date(foto.timestamp).toLocaleTimeString('ca', { hour: '2-digit', minute: '2-digit' }) : '';
-    document.getElementById('lb-img').src = foto.url || `https://drive.google.com/uc?id=${foto.fileId}`;
-    document.getElementById('lb-hora').textContent = hora;
-    document.getElementById('lb-persones').textContent = foto.persones.join(', ');
-    document.getElementById('lb-notes').textContent = foto.notes;
+    // Usar thumbnail per al lightbox (uc?id= no funciona per embedding)
+    document.getElementById('lb-img').src = `https://drive.google.com/thumbnail?id=${foto.fileId}&sz=w1600`;
+    document.getElementById('lb-hora').textContent = hora ? `🕐 ${hora}` : '';
+    document.getElementById('lb-autor').textContent = foto.pujatNom ? `📷 ${foto.pujatNom}` : '';
+    document.getElementById('lb-persones').textContent = foto.persones.length ? `👥 ${foto.persones.join(', ')}` : '';
+    document.getElementById('lb-notes').textContent = foto.notes ? `"${foto.notes}"` : '';
     document.getElementById('lb-counter').textContent = `${_lbIdx + 1} / ${_lbList.length}`;
     document.getElementById('lb-prev').disabled = _lbIdx === 0;
     document.getElementById('lb-next').disabled = _lbIdx === _lbList.length - 1;
   }
 
+  function _renderLb() {
+    const foto = _lbList[_lbIdx];
+    if (!foto) return;
+    const hora = foto.timestamp ? new Date(foto.timestamp).toLocaleTimeString('ca', { hour: '2-digit', minute: '2-digit' }) : '';
+    document.getElementById('lb-img').src = `https://drive.google.com/thumbnail?id=${foto.fileId}&sz=w1600`;
+    document.getElementById('lb-hora').textContent     = hora ? `🕐 ${hora}` : '';
+    document.getElementById('lb-autor').textContent    = foto.pujatNom ? `📷 ${foto.pujatNom}` : '';
+    document.getElementById('lb-persones').textContent = foto.persones.length ? `👥 ${foto.persones.join(', ')}` : '';
+    document.getElementById('lb-notes').textContent    = foto.notes ? `"${foto.notes}"` : '';
+    document.getElementById('lb-counter').textContent  = `${_lbIdx + 1} / ${_lbList.length}`;
+    document.getElementById('lb-prev').disabled = _lbIdx === 0;
+    document.getElementById('lb-next').disabled = _lbIdx === _lbList.length - 1;
+
+    // Mostrar botó editar només si és la teva foto
+    const editBtn = document.getElementById('lb-edit');
+    const myEmail = Auth.getProfile()?.email;
+    editBtn.classList.toggle('hidden', !myEmail || foto.pujatEmail !== myEmail);
+    editBtn.onclick = () => _openEdit(foto);
+  }
+
+  // ── Editar foto ───────────────────────────────
+  let _editingFoto = null;
+
+  function _openEdit(foto) {
+    _editingFoto = foto;
+    // Chips persones
+    const container = document.getElementById('edit-chips-persones');
+    container.innerHTML = '';
+    CONFIG.PERSONES.forEach(nom => {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (foto.persones.includes(nom) ? ' selected' : '');
+      btn.dataset.value = nom;
+      btn.textContent = nom;
+      btn.addEventListener('click', () => btn.classList.toggle('selected'));
+      container.appendChild(btn);
+    });
+    document.getElementById('edit-notes').value = foto.notes || '';
+    document.getElementById('edit-modal').classList.remove('hidden');
+    document.getElementById('lightbox').classList.add('hidden');
+  }
+
+  function _closeEdit() {
+    document.getElementById('edit-modal').classList.add('hidden');
+    _editingFoto = null;
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('lb-close').addEventListener('click', () => document.getElementById('lightbox').classList.add('hidden'));
+    document.getElementById('lb-close').addEventListener('click', () => {
+      document.getElementById('lightbox').classList.add('hidden');
+    });
     document.getElementById('lb-prev').addEventListener('click', () => { if (_lbIdx > 0) { _lbIdx--; _renderLb(); } });
     document.getElementById('lb-next').addEventListener('click', () => { if (_lbIdx < _lbList.length - 1) { _lbIdx++; _renderLb(); } });
 
@@ -338,9 +390,44 @@
     lb.addEventListener('touchstart', e => { _lbStartX = e.touches[0].clientX; }, { passive: true });
     lb.addEventListener('touchend', e => {
       const dx = e.changedTouches[0].clientX - _lbStartX;
-      if (Math.abs(dx) > 40) { if (dx < 0) { if (_lbIdx < _lbList.length-1) { _lbIdx++; _renderLb(); } } else { if (_lbIdx > 0) { _lbIdx--; _renderLb(); } } }
+      if (Math.abs(dx) > 40) {
+        if (dx < 0 && _lbIdx < _lbList.length - 1) { _lbIdx++; _renderLb(); }
+        else if (dx > 0 && _lbIdx > 0) { _lbIdx--; _renderLb(); }
+      }
     }, { passive: true });
     lb.addEventListener('click', e => { if (e.target === lb) lb.classList.add('hidden'); });
+
+    // Editar — guardar
+    document.getElementById('edit-save-btn').addEventListener('click', async () => {
+      if (!_editingFoto) return;
+      const persones = [...document.querySelectorAll('#edit-chips-persones .chip.selected')].map(c => c.dataset.value);
+      const notes    = document.getElementById('edit-notes').value.trim();
+      try {
+        await Sheets.updateRow(_editingFoto.fileId, { persones, notes });
+        _showToast('✅ Foto actualitzada', 'success');
+        _closeEdit();
+        await _loadFotos();
+      } catch(err) { _showToast('❌ Error: ' + err.message, 'error'); }
+    });
+
+    // Editar — eliminar
+    document.getElementById('edit-delete-btn').addEventListener('click', async () => {
+      if (!_editingFoto) return;
+      if (!confirm('Segur que vols eliminar aquesta foto?')) return;
+      try {
+        await Drive.deleteFile(_editingFoto.fileId);
+        await Sheets.deleteRow(_editingFoto.fileId);
+        _showToast('🗑️ Foto eliminada', 'success');
+        _closeEdit();
+        await _loadFotos();
+      } catch(err) { _showToast('❌ Error: ' + err.message, 'error'); }
+    });
+
+    // Editar — cancel·lar
+    document.getElementById('edit-cancel-btn').addEventListener('click', _closeEdit);
+    document.getElementById('edit-modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('edit-modal')) _closeEdit();
+    });
   });
 
   // ── Toast ─────────────────────────────────────

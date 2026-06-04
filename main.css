@@ -201,7 +201,8 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
 .foto-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .foto-card-vid-badge { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); color: #fff; font-size: 1.8rem; }
 .foto-card-info { padding: 7px 9px 9px; display: flex; flex-direction: column; gap: 2px; }
-.foto-card-hora { font-size: 0.7rem; font-weight: 700; color: var(--accent); }
+.foto-card-hora   { font-size: 0.7rem; font-weight: 700; color: var(--accent); }
+.foto-card-autor  { font-size: 0.68rem; color: var(--text-muted); }
 .foto-card-persones { font-size: 0.72rem; color: var(--text2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .foto-card-notes { font-size: 0.68rem; color: var(--text-muted); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fotos-empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 0.9rem; grid-column: 1/-1; }
@@ -215,7 +216,8 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
 .lb-img-wrap { display: flex; align-items: center; justify-content: center; }
 #lb-img { max-width: 100%; max-height: 65dvh; object-fit: contain; border-radius: 12px; }
 .lb-info { color: #fff; text-align: center; }
-.lb-hora { font-size: 0.8rem; color: var(--accent); font-weight: 600; }
+.lb-hora     { font-size: 0.85rem; color: var(--accent); font-weight: 700; }
+.lb-autor    { font-size: 0.8rem; color: #aaa; margin-top: 2px; }
 .lb-persones { font-size: 0.9rem; font-weight: 500; margin-top: 3px; }
 .lb-notes { font-size: 0.82rem; color: #aaa; font-style: italic; margin-top: 3px; }
 .lb-nav { display: flex; align-items: center; justify-content: center; gap: 12px; }
@@ -243,3 +245,54 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
 }
 .toast.success { background: rgba(52,199,89,0.95); color: #fff; border-color: transparent; }
 .toast.error   { background: rgba(255,59,48,0.95); color: #fff; border-color: transparent; }
+
+/* ── Edit button al lightbox ─────────────────── */
+.lb-edit {
+  position: fixed; top: 1rem; right: 3.5rem;
+  background: rgba(255,255,255,0.1); border: none; border-radius: 50%;
+  color: #fff; cursor: pointer; width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+  transition: background 0.15s;
+}
+.lb-edit:hover { background: var(--accent); }
+
+/* ── Modal edició ────────────────────────────── */
+.edit-modal-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.edit-modal {
+  background: var(--bg2); border-radius: 22px 22px 0 0; width: 100%;
+  max-width: 560px; max-height: 85dvh; overflow-y: auto;
+  box-shadow: 0 -4px 40px rgba(0,0,0,0.2);
+  animation: fadeUp 0.3s ease both;
+}
+.edit-modal-handle {
+  width: 36px; height: 4px; background: var(--border2);
+  border-radius: 99px; margin: 10px auto 0;
+}
+.edit-modal-body   { padding: 1.25rem 1.25rem 2rem; }
+.edit-modal-title  { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+.edit-modal-label  { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px; display: block; }
+.edit-modal-actions {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 1.25rem; gap: 8px; flex-wrap: wrap;
+}
+.edit-delete-btn {
+  background: none; border: 1px solid rgba(255,59,48,0.35); border-radius: 10px;
+  color: var(--red); cursor: pointer; font-family: var(--font); font-size: 0.88rem;
+  font-weight: 500; padding: 0.65rem 1rem; transition: var(--transition);
+}
+.edit-delete-btn:hover { background: var(--red); color: #fff; border-color: var(--red); }
+.edit-cancel-btn {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px;
+  color: var(--text2); cursor: pointer; font-family: var(--font); font-size: 0.9rem;
+  font-weight: 500; padding: 0.65rem 1.1rem; transition: var(--transition);
+}
+.edit-save-btn {
+  background: var(--accent); border: none; border-radius: 10px;
+  color: #fff; cursor: pointer; font-family: var(--font); font-size: 0.9rem;
+  font-weight: 700; padding: 0.65rem 1.4rem; transition: opacity 0.15s;
+}
+.edit-save-btn:hover { opacity: 0.88; }
