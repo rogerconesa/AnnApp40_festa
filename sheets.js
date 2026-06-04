@@ -19,7 +19,8 @@ const Sheets = (() => {
   }
 
   async function readAll() {
-    const range = `'${CONFIG.SHEET_DIA}'!A2:O`;
+    // Llegir des de A1 (no A2) per no perdre la fila 1 si no hi ha capçalera
+    const range = `'${CONFIG.SHEET_DIA}'!A1:O`;
     const url   = _readUrl(range);
     const res   = await fetch(url, { headers: _headers() });
     if (!res.ok) {
@@ -28,16 +29,20 @@ const Sheets = (() => {
     }
     const data = await res.json();
     return (data.values || []).map(r => ({
-      id:        r[0]  || '',
-      fileId:    r[1]  || '',
-      url:       r[2]  || '',
-      timestamp: r[10] || r[3] || '',
-      persones:  r[5]  ? String(r[5]).split(',').map(p => p.trim()).filter(Boolean) : [],
-      notes:     r[7]  || '',
-      pujatNom:  r[8]  || 'Anònim',
-      pujatEmail:r[9]  || '',
-      tipus:     r[13] || 'foto',
-    })).filter(r => r.fileId);
+      id:         r[0]  || '',
+      fileId:     r[1]  || '',
+      url:        r[2]  || '',
+      timestamp:  r[10] || r[3] || '',
+      persones:   r[5]  ? String(r[5]).split(',').map(p => p.trim()).filter(Boolean) : [],
+      notes:      r[7]  || '',
+      pujatNom:   r[8]  || 'Anònim',
+      pujatEmail: r[9]  || '',
+      tipus:      r[13] || 'foto',
+    })).filter(r => {
+      // Filtrar capçaleres (si existeixen) i files sense fileId real
+      // Un fileId de Drive sempre té ~28+ caràcters alfanumèrics
+      return r.fileId && r.fileId.length > 10 && r.fileId !== 'fileId';
+    });
   }
 
   async function appendRow(data, _isRetry) {
