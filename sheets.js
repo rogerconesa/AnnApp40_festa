@@ -61,8 +61,13 @@ const Sheets = (() => {
       body: JSON.stringify({ values: [row] }),
     });
     if (res.status === 401 && !_isRetry) { await Auth.refreshToken(); return appendRow(data, true); }
-    if (!res.ok) throw new Error('Error Sheets: ' + res.status);
-    return res.json();
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      throw new Error(`Sheets ${res.status}: ${errBody.slice(0, 200)}`);
+    }
+    const result = await res.json();
+    console.log('✅ Sheets appendRow OK:', result.updates?.updatedRange, 'files:', result.updates?.updatedRows);
+    return result;
   }
 
   // ── Actualitzar fila per fileId ───────────────
