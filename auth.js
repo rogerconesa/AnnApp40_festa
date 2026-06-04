@@ -3,6 +3,7 @@ const Auth = (() => {
   let _token       = null;
   let _profile     = null;
   let _onLogin     = null;
+  let _refreshTimer = null;
 
   function init(onLogin) {
     _onLogin = onLogin;
@@ -47,6 +48,11 @@ const Auth = (() => {
           sessionStorage.setItem('festa_profile', JSON.stringify(_profile));
         } catch {}
         _onLogin && _onLogin();
+        // Renovar token cada 50min (expira als 60min)
+        if (_refreshTimer) clearInterval(_refreshTimer);
+        _refreshTimer = setInterval(() => {
+          refreshToken().catch(e => console.warn('Silent refresh:', e));
+        }, 50 * 60 * 1000);
       },
     });
   }
