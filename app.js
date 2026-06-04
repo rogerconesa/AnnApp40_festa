@@ -128,16 +128,24 @@
       const pujatNom   = profile?.name  || profile?.email?.split('@')[0] || 'Anònim';
       const pujatEmail = profile?.email || '';
 
-      const result = await Drive.uploadFile(_capturedFile, (pct) => {
-        progressBar.querySelector('.progress-fill').style.width = pct + '%';
-      });
+      let result;
+      try {
+        result = await Drive.uploadFile(_capturedFile, (pct) => {
+          progressBar.querySelector('.progress-fill').style.width = pct + '%';
+        });
+      } catch(uploadErr) {
+        throw new Error('Error pujant a Drive: ' + uploadErr.message);
+      }
 
       const fileId = result.id;
-      // thumbnail URL — funciona per embedding (uc?id= no funciona ja)
       const url    = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
       const id     = `festa_${Date.now()}`;
 
-      await Sheets.appendRow({ id, fileId, url, timestamp, persones, notes, pujatNom, pujatEmail, tipus });
+      try {
+        await Sheets.appendRow({ id, fileId, url, timestamp, persones, notes, pujatNom, pujatEmail, tipus });
+      } catch(sheetsErr) {
+        throw new Error('Foto pujada a Drive, però error a Sheets: ' + sheetsErr.message);
+      }
 
       // Reset
       document.getElementById('photo-preview').innerHTML = '';
