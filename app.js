@@ -42,27 +42,32 @@
 
   // ── Càmera / Captura ─────────────────────────
   function _initCamera() {
-    const input   = document.getElementById('camera-input');
-    const preview = document.getElementById('photo-preview');
-    const btnCam  = document.getElementById('btn-open-camera');
-    const tagsZone= document.getElementById('tags-zone');
-    const btnPujar= document.getElementById('btn-pujar');
+    const inputFoto  = document.getElementById('camera-input-foto');
+    const inputVideo = document.getElementById('camera-input-video');
+    const preview    = document.getElementById('photo-preview');
+    const tagsZone   = document.getElementById('tags-zone');
+    const btnPujar   = document.getElementById('btn-pujar');
 
-    btnCam.addEventListener('click', () => input.click());
+    document.getElementById('btn-open-foto').addEventListener('click', () => inputFoto.click());
+    document.getElementById('btn-open-video').addEventListener('click', () => inputVideo.click());
 
-    input.addEventListener('change', () => {
-      const file = input.files[0];
+    const handleFile = (file) => {
       if (!file) return;
       _capturedFile = file;
       const url = URL.createObjectURL(file);
       if (file.type.startsWith('video/')) {
-        preview.innerHTML = `<video src="${url}" controls class="preview-media"></video>`;
+        preview.innerHTML = `<video src="${url}" controls playsinline class="preview-media"></video>`;
       } else {
         preview.innerHTML = `<img src="${url}" class="preview-media" />`;
       }
       tagsZone.classList.remove('hidden');
       btnPujar.classList.remove('hidden');
-    });
+      // Scroll fins al formulari
+      tagsZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    inputFoto.addEventListener('change',  () => handleFile(inputFoto.files[0]));
+    inputVideo.addEventListener('change', () => handleFile(inputVideo.files[0]));
 
     btnPujar.addEventListener('click', _uploadPhoto);
   }
@@ -124,7 +129,8 @@
       document.getElementById('photo-preview').innerHTML = '';
       document.getElementById('tags-zone').classList.add('hidden');
       btn.classList.add('hidden');
-      document.getElementById('camera-input').value = '';
+      document.getElementById('camera-input-foto').value  = '';
+      document.getElementById('camera-input-video').value = '';
       document.getElementById('tag-notes').value = '';
       _renderPersonaChips();
       _capturedFile = null;

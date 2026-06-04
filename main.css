@@ -90,16 +90,25 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); min-
 /* ── Panel Fer Foto ────────────────────────── */
 #panel-foto { padding: 1rem; }
 
+.camera-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
 .camera-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 10px; width: 100%; padding: 2rem;
-  background: var(--bg2); border: 2px dashed var(--accent); border-radius: 20px;
+  gap: 8px; width: 100%; padding: 1.5rem 1rem;
+  background: var(--bg2); border: 2px dashed var(--accent); border-radius: 18px;
   color: var(--accent); cursor: pointer; font-family: var(--font);
-  font-size: 1rem; font-weight: 600; margin-bottom: 1rem;
-  transition: background 0.15s;
+  font-size: 0.95rem; font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-.camera-btn:hover { background: var(--accent-dim); }
-.camera-btn svg   { width: 48px; height: 48px; }
+.camera-btn svg   { width: 36px; height: 36px; }
+.camera-btn:hover, .camera-btn:active { background: var(--accent-dim); }
+.camera-btn-video { border-color: var(--gold); color: var(--gold); }
+.camera-btn-video:hover, .camera-btn-video:active { background: rgba(245,158,11,0.08); }
 
 .preview-wrap  { margin-bottom: 1rem; border-radius: var(--radius); overflow: hidden; background: #000; }
 .preview-media { width: 100%; max-height: 50dvh; object-fit: contain; display: block; }
