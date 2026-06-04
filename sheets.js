@@ -44,14 +44,15 @@ const Sheets = (() => {
 
   // ── Afegir nova fila ──────────────────────────
   async function appendRow(data, _isRetry) {
-    const { id, fileId, url, timestamp, persones, notes, pujatNom, pujatEmail, tipus } = data;
+    const { id, fileId, url, timestamp, persones, categories, notes, pujatNom, pujatEmail, tipus } = data;
     const hora = timestamp
       ? new Date(timestamp).toLocaleTimeString('ca', { hour: '2-digit', minute: '2-digit' })
       : '';
     const row = [
       id, fileId, url, hora, '',
-      Array.isArray(persones) ? persones.join(', ') : '',
-      'Festa', notes || '', pujatNom || 'Anònim', pujatEmail || '',
+      Array.isArray(persones)   ? persones.join(', ')   : '',
+      Array.isArray(categories) ? categories.join(', ') : 'Festa',
+      notes || '', pujatNom || 'Anònim', pujatEmail || '',
       timestamp || '', '', '', tipus || 'foto', 'false',
     ];
     const range    = `'${CONFIG.SHEET_DIA}'!A:O`;

@@ -39,34 +39,35 @@
     <!-- Panel: FER FOTO -->
     <div id="panel-foto">
 
-      <!-- Inputs separats per foto i vídeo (obre càmera directament al mòbil) -->
-      <input type="file" id="camera-input-foto"  accept="image/*" capture="environment" class="hidden" />
-      <input type="file" id="camera-input-video" accept="video/*" capture="environment" class="hidden" />
+      <!-- Només fotos -->
+      <input type="file" id="camera-input-foto" accept="image/*" capture="environment" class="hidden" />
 
-      <div class="camera-btns">
-        <button id="btn-open-foto" class="camera-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-          </svg>
-          📷 Fer foto
-        </button>
-        <button id="btn-open-video" class="camera-btn camera-btn-video">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <polygon points="23,7 16,12 23,17"/>
-            <rect x="1" y="5" width="15" height="14" rx="2"/>
-          </svg>
-          🎬 Gravar vídeo
-        </button>
-      </div>
+      <button id="btn-open-foto" class="camera-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        📷 Fer foto
+      </button>
 
       <div id="photo-preview" class="preview-wrap"></div>
 
       <div id="tags-zone" class="tags-zone hidden">
         <p class="tags-section-title">Qui surt a la foto?</p>
         <div class="chips-wrap" id="chips-persones"></div>
+        <div class="tag-add-wrap">
+          <input type="text" id="input-nova-persona" class="tag-add-input" placeholder="Afegir persona..." autocomplete="off" />
+          <button id="btn-add-persona" class="tag-add-btn">+ Afegir</button>
+        </div>
 
-        <p class="tags-section-title">Afegeix un comentari</p>
+        <p class="tags-section-title" style="margin-top:1rem">Categoria</p>
+        <div class="chips-wrap" id="chips-categoria"></div>
+        <div class="tag-add-wrap">
+          <input type="text" id="input-nova-categoria" class="tag-add-input" placeholder="Afegir categoria..." autocomplete="off" />
+          <button id="btn-add-categoria" class="tag-add-btn">+ Afegir</button>
+        </div>
+
+        <p class="tags-section-title" style="margin-top:1rem">Comentari</p>
         <textarea id="tag-notes" class="notes-input" rows="2" placeholder="Escriu aquí el que vulguis..."></textarea>
       </div>
 

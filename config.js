@@ -14,5 +14,11 @@ const CONFIG = {
     'Mire Ll','Bernat','Glo','Sònia'
   ],
 
+  CATEGORIES: [
+    'Vallvis','Happy Family','ICR','Wiki-Wiki','Menéndez','DMS','Senes',
+    'Aran','Festa','Aniversari','Viatges','Platja','Barbacoa','Bessones',
+    'Amb Aquesta Medalla'
+  ],
+
   REFRESH_INTERVAL: 15000, // 15s
 };

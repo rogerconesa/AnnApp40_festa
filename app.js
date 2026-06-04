@@ -38,6 +38,8 @@
 
   function _initApp() {
     _renderPersonaChips();
+    _renderCategoriaChips();
+    _initCustomTags();
     _initCamera();
     _initTabs();
     _initVeure();
@@ -70,48 +72,84 @@
 
   // ── Càmera / Captura ─────────────────────────
   function _initCamera() {
-    const inputFoto  = document.getElementById('camera-input-foto');
-    const inputVideo = document.getElementById('camera-input-video');
-    const preview    = document.getElementById('photo-preview');
-    const tagsZone   = document.getElementById('tags-zone');
-    const btnPujar   = document.getElementById('btn-pujar');
+    const inputFoto = document.getElementById('camera-input-foto');
+    const preview   = document.getElementById('photo-preview');
+    const tagsZone  = document.getElementById('tags-zone');
+    const btnPujar  = document.getElementById('btn-pujar');
 
     document.getElementById('btn-open-foto').addEventListener('click', () => inputFoto.click());
-    document.getElementById('btn-open-video').addEventListener('click', () => inputVideo.click());
 
     const handleFile = (file) => {
       if (!file) return;
       _capturedFile = file;
       const url = URL.createObjectURL(file);
-      if (file.type.startsWith('video/')) {
-        preview.innerHTML = `<video src="${url}" controls playsinline class="preview-media"></video>`;
-      } else {
-        preview.innerHTML = `<img src="${url}" class="preview-media" />`;
-      }
+      preview.innerHTML = `<img src="${url}" class="preview-media" />`;
       tagsZone.classList.remove('hidden');
       btnPujar.classList.remove('hidden');
-      // Scroll fins al formulari
       tagsZone.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    inputFoto.addEventListener('change',  () => handleFile(inputFoto.files[0]));
-    inputVideo.addEventListener('change', () => handleFile(inputVideo.files[0]));
-
+    inputFoto.addEventListener('change', () => handleFile(inputFoto.files[0]));
     btnPujar.addEventListener('click', _uploadPhoto);
   }
 
   // ── Persones chips ────────────────────────────
   function _renderPersonaChips() {
-    const container = document.getElementById('chips-persones');
+    _renderChips('chips-persones', CONFIG.PERSONES, true);
+  }
+
+  function _renderCategoriaChips() {
+    _renderChips('chips-categoria', CONFIG.CATEGORIES, false);
+  }
+
+  function _renderChips(containerId, items, multi) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    // Conservar seleccionats actuals
+    const selected = [...container.querySelectorAll('.chip.selected')].map(c => c.dataset.value);
     container.innerHTML = '';
-    CONFIG.PERSONES.forEach(nom => {
+    items.forEach(nom => {
       const btn = document.createElement('button');
-      btn.className = 'chip';
+      btn.className = 'chip' + (selected.includes(nom) ? ' selected' : '');
       btn.dataset.value = nom;
       btn.textContent = nom;
-      btn.addEventListener('click', () => btn.classList.toggle('selected'));
+      btn.addEventListener('click', () => {
+        if (!multi) container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        btn.classList.toggle('selected');
+      });
       container.appendChild(btn);
     });
+  }
+
+  function _initCustomTags() {
+    // Persona personalitzada
+    const addPersona = () => {
+      const input = document.getElementById('input-nova-persona');
+      const nom   = input?.value.trim();
+      if (!nom) return;
+      if (!CONFIG.PERSONES.includes(nom)) CONFIG.PERSONES.push(nom);
+      _renderPersonaChips();
+      // Auto-seleccionar la nova
+      const container = document.getElementById('chips-persones');
+      [...container.querySelectorAll('.chip')].find(c => c.dataset.value === nom)?.classList.add('selected');
+      if (input) input.value = '';
+    };
+    document.getElementById('btn-add-persona')?.addEventListener('click', addPersona);
+    document.getElementById('input-nova-persona')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPersona(); } });
+
+    // Categoria personalitzada
+    const addCategoria = () => {
+      const input = document.getElementById('input-nova-categoria');
+      const nom   = input?.value.trim();
+      if (!nom) return;
+      if (!CONFIG.CATEGORIES.includes(nom)) CONFIG.CATEGORIES.push(nom);
+      _renderCategoriaChips();
+      const container = document.getElementById('chips-categoria');
+      [...container.querySelectorAll('.chip')].find(c => c.dataset.value === nom)?.classList.add('selected');
+      if (input) input.value = '';
+    };
+    document.getElementById('btn-add-categoria')?.addEventListener('click', addCategoria);
+    document.getElementById('input-nova-categoria')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCategoria(); } });
   }
 
   function _getSelectedPersones() {
@@ -131,6 +169,7 @@
 
     try {
       const persones   = _getSelectedPersones();
+      const categories = [...document.querySelectorAll('#chips-categoria .chip.selected')].map(c => c.dataset.value);
       const notes      = document.getElementById('tag-notes').value.trim();
       const now        = new Date();
       const tzOffset   = -now.getTimezoneOffset();
@@ -159,7 +198,7 @@
       const id     = `festa_${Date.now()}`;
 
       try {
-        await Sheets.appendRow({ id, fileId, url, timestamp, persones, notes, pujatNom, pujatEmail, tipus });
+        await Sheets.appendRow({ id, fileId, url, timestamp, persones, categories, notes, pujatNom, pujatEmail, tipus });
       } catch(sheetsErr) {
         throw new Error('Foto pujada a Drive, però error a Sheets: ' + sheetsErr.message);
       }
@@ -169,9 +208,9 @@
       document.getElementById('tags-zone').classList.add('hidden');
       btn.classList.add('hidden');
       document.getElementById('camera-input-foto').value  = '';
-      document.getElementById('camera-input-video').value = '';
       document.getElementById('tag-notes').value = '';
       _renderPersonaChips();
+      _renderCategoriaChips();
       _capturedFile = null;
       _showToast('✅ Foto pujada!', 'success');
       _loadFotos();
