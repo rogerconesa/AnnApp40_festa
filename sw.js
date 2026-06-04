@@ -1,15 +1,7 @@
-const CACHE = 'annapp-festa-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/main.css',
-  '/app.js',
-  '/auth.js',
-  '/config.js',
-  '/drive.js',
-  '/sheets.js',
-  '/manifest.json',
-];
+const CACHE = 'annapp-festa-v2';
+const ASSETS = ['/index.html', '/main.css', '/app.js', '/auth.js',
+                '/config.js', '/drive.js', '/sheets.js', '/manifest.json',
+                '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -28,13 +20,22 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Network-first per a les APIs de Google, cache-first per als assets locals
   const url = new URL(e.request.url);
-  if (url.hostname.includes('googleapis') || url.hostname.includes('accounts.google')) {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+
+  // APIs externes: sempre xarxa
+  if (!url.pathname.match(/\.(html|css|js|json|png|jpg|jpeg|svg|ico)$/)) {
+    e.respondWith(fetch(e.request));
     return;
   }
+
+  // Fitxers locals: network-first (evita servir codi antic en cache)
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request)
+      .then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return res;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
