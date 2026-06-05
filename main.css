@@ -337,3 +337,7 @@ body { overscroll-behavior-x: none; }
   padding: 6px 12px; white-space: nowrap; transition: var(--transition);
 }
 .tag-add-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Bloquejar pull-to-refresh ───────────────── */
+html { overscroll-behavior-y: none; }
+#screen-app { overscroll-behavior-y: contain; }
